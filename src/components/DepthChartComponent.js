@@ -11,7 +11,10 @@ import {
     Tooltip
 } from 'chart.js';
 import {Line} from 'react-chartjs-2';
-import {useOrderBookState} from "./OrderBookComponent";
+import {useOrderBookState} from "../hooks/useOrderBookState";
+import {Avatar, Card, CardContent, CardHeader, IconButton, Typography} from "@mui/material";
+import BarChartIcon from '@mui/icons-material/BarChart';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 ChartJS.register(
     CategoryScale,
@@ -40,7 +43,7 @@ export const options = {
     },
 };
 
-export default function Chart() {
+export default function DepthChartComponent() {
 
     const {orderBook} = useOrderBookState();
     const labels = []
@@ -76,7 +79,7 @@ export default function Chart() {
                     data: orderBook.map((v) => v.side === 'BUY' ? v.total : null),
                     borderColor: 'rgb(70,161,41)',
                     backgroundColor: 'rgba(56,155,29,0.5)',
-                    stepped: 'after',
+                    stepped: 'before',
                 },
                 {
                     label: 'Asks',
@@ -84,12 +87,30 @@ export default function Chart() {
                     data: orderBook.map((v) => v.side === 'SELL' ? v.total : null),
                     borderColor: 'rgb(255, 99, 132)',
                     backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    stepped: 'before',
+                    stepped: 'after',
                 },
             ],
         });
     }, [orderBook])
     return (
-        <Line options={options} data={state}/>
+        <Card>
+            <CardHeader
+                avatar={
+                    <Avatar aria-label="recipe">
+                        <BarChartIcon/>
+                    </Avatar>
+                }
+                action={
+                    <IconButton aria-label="settings">
+                        <MoreVertIcon/>
+                    </IconButton>
+                }
+                title="Depth chart"
+                // subheader={new Date().toDateString()}
+            />
+            <CardContent>
+                <Line options={options} data={state}/>
+            </CardContent>
+        </Card>
     );
 }
