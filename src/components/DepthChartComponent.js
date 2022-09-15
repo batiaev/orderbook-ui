@@ -12,7 +12,7 @@ import {
 } from 'chart.js';
 import {Line} from 'react-chartjs-2';
 import {useOrderBookState} from "../hooks/useOrderBookState";
-import {Avatar, Card, CardContent, CardHeader, IconButton, Typography} from "@mui/material";
+import {Avatar, Card, CardContent, CardHeader, IconButton} from "@mui/material";
 import BarChartIcon from '@mui/icons-material/BarChart';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 

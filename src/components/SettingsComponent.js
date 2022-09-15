@@ -9,7 +9,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 
 function SettingsComponent() {
     const [frequency, setFrequency] = useState(250);//ms
-    const [bbo, setBbo] = useState({bid: 0, ask: 0});
+    const [depth, setDepth] = useState(5);//ms
     const [product, setProduct] = useState("ETH-USD");
     const {orderBook, setOrderBook} = useOrderBookState();
     const [isActive, setIsActive] = useState(false);
@@ -20,7 +20,6 @@ function SettingsComponent() {
 
     function reset() {
         setOrderBook([]);
-        setBbo({bid: 0, ask: 0})
         setIsActive(false);
     }
 
@@ -31,20 +30,16 @@ function SettingsComponent() {
             let id = params.get('productId') || 'ETH-USD'
             setProduct(id);
             interval = setInterval(() => {
-                OrderBookService.getOrderBook(product)
+                OrderBookService.getOrderBook(product, depth)
                     .then((response) => {
                         setOrderBook(response.data);
-                        setBbo({
-                            bid: orderBook[orderBook.length / 2].priceLevel.toFixed(2),
-                            ask: orderBook && orderBook[orderBook.length / 2 - 1].priceLevel.toFixed(2)
-                        })
                     })
             }, frequency);
         } else if (!isActive && orderBook !== []) {
             clearInterval(interval);
         }
         return () => clearInterval(interval);
-    }, [setOrderBook, product, isActive, orderBook, frequency]);
+    }, [setOrderBook, product, isActive, orderBook, frequency, depth]);
 
     return (
         <Card>
@@ -65,7 +60,7 @@ function SettingsComponent() {
             <CardContent>
                 <Grid container spacing={2} padding={2}>
                     <Grid item xl={12}>
-                        <ButtonGroup variant="contained" aria-label="outlined primary button group">
+                        <ButtonGroup variant="contained" aria-label="outlined primary button group" fullWidth={true}>
                             <Button onClick={toggle}
                                     variant={isActive ? 'outlined' : 'contained'}>{isActive ? 'Pause' : 'Start'}</Button>
                             <Button onClick={reset}>Reset</Button>
@@ -75,6 +70,7 @@ function SettingsComponent() {
                         <TextField
                             id="productId"
                             label="Product"
+                            fullWidth={true}
                             defaultValue={product}
                             onChange={event => {
                                 setProduct(event.target.value)
@@ -85,9 +81,21 @@ function SettingsComponent() {
                         <TextField
                             id="frequency"
                             label="Frequency update (ms)"
+                            fullWidth={true}
                             defaultValue={frequency}
                             onChange={event => {
                                 setFrequency(Number(event.target.value))
+                            }}
+                        />
+                    </Grid>
+                    <Grid item xl={12}>
+                        <TextField
+                            id="depth"
+                            label="Order book depth"
+                            fullWidth={true}
+                            defaultValue={depth}
+                            onChange={event => {
+                                setDepth(Number(event.target.value))
                             }}
                         />
                     </Grid>
