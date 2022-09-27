@@ -10,7 +10,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 function SettingsComponent() {
     const [frequency, setFrequency] = useState(250);//ms
     const [depth, setDepth] = useState(5);//ms
-    const [product, setProduct] = useState("ETH-USD");
+    const [product, setProduct] = useState('ETH-USD');
     const {orderBook, setOrderBook} = useOrderBookState();
     const [isActive, setIsActive] = useState(false);
 
@@ -84,6 +84,7 @@ function SettingsComponent() {
                             fullWidth={true}
                             defaultValue={frequency}
                             onChange={event => {
+                                console.log(Number(event.target.value))
                                 setFrequency(Number(event.target.value))
                             }}
                         />

@@ -1,14 +1,14 @@
 import './App.css';
 import OrderBookComponent from "./components/OrderBookComponent";
-import DepthChartComponent from "./components/DepthChartComponent";
+import DepthChartComponent from "./components/charts/DepthChartComponent";
 import {Container, Grid} from "@mui/material";
 import {OrderBookStateProvider} from "./hooks/useOrderBookState";
 import SettingsComponent from "./components/SettingsComponent";
 import NewOrderComponent from "./components/NewOrderComponent";
 import AssetStateComponent from "./components/AssetStateComponent";
 import MarketComponent from "./components/MarketComponent";
-import CandleStickChartComponent from "./components/CandleStickChartComponent";
-import LineChartComponent from "./components/LineChartComponent";
+import CandleStickChartComponent from "./components/charts/CandleStickChartComponent";
+import LineChartComponent from "./components/charts/LineChartComponent";
 
 function App() {
     return (

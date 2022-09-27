@@ -11,10 +11,7 @@ import {
     Tooltip
 } from 'chart.js';
 import {Line} from 'react-chartjs-2';
-import {useOrderBookState} from "../hooks/useOrderBookState";
-import {Avatar, Card, CardContent, CardHeader, IconButton} from "@mui/material";
-import BarChartIcon from '@mui/icons-material/BarChart';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import {useOrderBookState} from "../../../hooks/useOrderBookState";
 
 ChartJS.register(
     CategoryScale,
@@ -43,7 +40,7 @@ export const options = {
     },
 };
 
-export default function DepthChartComponent() {
+export default function DepthChartWidget() {
 
     const {orderBook} = useOrderBookState();
     const labels = []
@@ -93,24 +90,6 @@ export default function DepthChartComponent() {
         });
     }, [orderBook])
     return (
-        <Card>
-            <CardHeader
-                avatar={
-                    <Avatar aria-label="recipe">
-                        <BarChartIcon/>
-                    </Avatar>
-                }
-                action={
-                    <IconButton aria-label="settings">
-                        <MoreVertIcon/>
-                    </IconButton>
-                }
-                title="Depth chart"
-                // subheader={new Date().toDateString()}
-            />
-            <CardContent>
-                <Line options={options} data={state}/>
-            </CardContent>
-        </Card>
+        <Line options={options} data={state}/>
     );
 }

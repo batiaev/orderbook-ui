@@ -1,13 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {ColorType, createChart} from 'lightweight-charts';
-import {useOrderBookState} from "../hooks/useOrderBookState";
-import {Avatar, Card, CardContent, CardHeader, IconButton} from "@mui/material";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import {useOrderBookState} from "../../../hooks/useOrderBookState";
 
-export default function CandleStickChartComponent() {
+export default function LineChartWidget() {
 
-    const [idx, setIdx] = useState(0);
     const [curDate, setCurDate] = useState({year: 2022, month: 1, day: 1});
 
     function nextBusinessDay(time) {
@@ -24,7 +20,7 @@ export default function CandleStickChartComponent() {
     }
 
     const [data, setData] = useState([
-        {time: curDate, open: 0, high: 0, low: 0, close: 0},
+        {time: curDate, value: 0},
     ])
     const {orderBook} = useOrderBookState();
 
@@ -41,21 +37,12 @@ export default function CandleStickChartComponent() {
                 + orderBook[orderBook.length / 2 - 1].priceLevel) / 2).toFixed(2);
             if (mid !== data[data.length - 1].value) {
                 setCurDate(nextBusinessDay(curDate))
-                if ((idx % 4) === 0) {
-                    data.push({time: curDate, open: mid, high: mid, low: mid, close: mid});
-                    console.log("CREATE= " + data[data.length - 1].high + '/' + data[data.length - 1].low
-                        + '/' + data[data.length - 1].open + '/' + data[data.length - 1].close + '/')
-                } else {
-                    data[data.length - 1].close = mid;
-                    data[data.length - 1].high = Math.max(data[data.length - 1].high, mid);
-                    data[data.length - 1].low = Math.max(data[data.length - 1].low, mid);
-                    console.log("update= " + data[data.length - 1].high + '/' + data[data.length - 1].low
-                        + '/' + data[data.length - 1].open + '/' + data[data.length - 1].close + '/')
-                }
-                setIdx(idx + 1)
+                data.push({time: curDate, value: mid});
                 setData(data)
             }
-            if (data.length >= 25) {
+            if (data.length > 1 && data[0].value === 0)
+                data.shift()
+            if (data.length >= 100) {
                 data.shift();
                 setData(data)
             }
@@ -74,7 +61,7 @@ export default function CandleStickChartComponent() {
             });
             chart.timeScale().fitContent();
 
-            const newSeries = chart.addCandlestickSeries();
+            const newSeries = chart.addAreaSeries({lineColor, topColor: areaTopColor, bottomColor: areaBottomColor});
             newSeries.setData(data);
 
             window.addEventListener('resize', handleResize);
@@ -85,32 +72,10 @@ export default function CandleStickChartComponent() {
                 chart.remove();
             };
         },
-        [data, orderBook, backgroundColor, lineColor, textColor, areaTopColor, areaBottomColor]
+        [data, curDate, orderBook, backgroundColor, lineColor, textColor, areaTopColor, areaBottomColor]
     );
 
     return (
-
-        <Card>
-            <CardHeader
-                avatar={
-                    <Avatar aria-label="recipe">
-                        <BarChartIcon/>
-                    </Avatar>
-                }
-                action={
-                    <IconButton aria-label="settings">
-                        <MoreVertIcon/>
-                    </IconButton>
-                }
-                title="Candle stick chart"
-                // subheader={new Date().toDateString()}
-            />
-            <CardContent>
-                <div
-                    ref={chartContainerRef}
-                />
-            </CardContent>
-        </Card>
-    );
+        <div ref={chartContainerRef}/>
+    )
 }
-;

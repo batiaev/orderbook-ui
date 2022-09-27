@@ -1,5 +1,6 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Button from '@mui/material/Button';
+import {useOrderBookState} from "../hooks/useOrderBookState";
 import {
     Avatar,
     Card,
@@ -21,6 +22,23 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 function NewOrderComponent() {
     const [value, setValue] = useState(0);
 
+    const [lastPrice, setLastPrice] = useState(0);
+    const [stop, setStop] = useState(0);
+    const [limit, setLimit] = useState(0);
+    const {orderBook} = useOrderBookState();
+
+    useEffect(() => {
+        const mid = orderBook.length === 0 ? 0 : ((orderBook[orderBook.length / 2].priceLevel
+            + orderBook[orderBook.length / 2 - 1].priceLevel) / 2).toFixed(2);
+        setLastPrice(mid)
+        if (value < 1) {
+            setLimit(mid)
+        }
+        if (value <= 1) {
+            setStop((mid * 0.95).toFixed(2))
+        }
+    }, [orderBook, lastPrice])
+
     const textType = () => {
         let type;
         switch (value) {
@@ -35,17 +53,11 @@ function NewOrderComponent() {
         }
         return type;
     }
+    // @ts-ignore
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
     const [side, setSide] = useState('buy');
-
-    const handleOrderSide = (
-        event: React.MouseEvent<HTMLElement>,
-        newSide: string,
-    ) => {
-        setSide(newSide);
-    };
 
     return (
         <Card>
@@ -71,7 +83,7 @@ function NewOrderComponent() {
                             color="primary"
                             value={side}
                             exclusive
-                            onChange={handleOrderSide}
+                            onChange={(event, newSide) => setSide(newSide || side)}
                             aria-label="Order side"
                             fullWidth={true}
                         >
@@ -104,7 +116,8 @@ function NewOrderComponent() {
                             id="limit"
                             label={(value === 0 ? "Market" : "Limit") + " Price"}
                             disabled={value === 0}
-                            defaultValue={123}
+                            defaultValue={limit}
+                            value={limit}
                             onChange={event => {
                                 // setProduct(event.target.value)
                             }}
@@ -115,7 +128,8 @@ function NewOrderComponent() {
                             id="stop"
                             label="Stop Price"
                             // disabled={value !== 2}
-                            defaultValue={234}
+                            defaultValue={stop}
+                            value={stop}
                             onChange={event => {
                                 // setProduct(event.target.value)
                             }}

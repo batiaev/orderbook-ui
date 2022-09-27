@@ -18,6 +18,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/Inbox';
+
 // import useProductState from "../hooks/useProductState";
 
 function AssetStateComponent() {
@@ -36,7 +37,8 @@ function AssetStateComponent() {
 
     useEffect(() => {
         updateProducts()
-    });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, products);
 
     return (
         <Card>
@@ -86,7 +88,7 @@ function AssetStateComponent() {
                                             <InboxIcon/>
                                         </Avatar>
                                     </ListItemAvatar>
-                                    <ListItemText primary={row}  secondary="1237.34"/>
+                                    <ListItemText primary={row} secondary="1237.34"/>
                                 </ListItem>
                             ))}
                         </List>

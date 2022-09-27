@@ -15,7 +15,6 @@ import {
     CardHeader,
     Checkbox,
     Container,
-    Divider,
     IconButton,
     LinearProgress,
     ListItemIcon,
@@ -30,23 +29,27 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import Button from "@mui/material/Button";
 
-const OrderBookFormats = [
-    'BID',
-    'ASK',
-    'ALL'
-]
+// const OrderBookFormats = [
+//     'BID',
+//     'ASK',
+//     'ALL'
+// ]
 
 function OrderBookComponent() {
     const [bbo, setBbo] = useState({bid: 0, ask: 0});
     const [oldMid, setOldMid] = useState(0);
     const trendUp = '🡥'
     const [trend, setTrend] = useState(trendUp) //'🡢'
+    const [showMid, setShowMid] = useState(true)
+    const [showTotal, setShowTotal] = useState(true)
     const {orderBook} = useOrderBookState();
 
-    const [maxDepth, setMaxDepth] = React.useState(30);
-
+    const minDepth = 1;
+    const maxDepth = 30;
+    const [orderBookType, setOrderBookType] = useState("All");
+    const [currentDepth, setCurrentDepth] = useState(maxDepth);
     const handleMaxDepthUpdate = (event, newValue) => {
-        setMaxDepth(newValue);
+        setCurrentDepth(newValue);
     };
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
@@ -100,7 +103,9 @@ function OrderBookComponent() {
                     'aria-labelledby': 'basic-button',
                 }}
             >
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={() => {
+                    setShowTotal(!showTotal)
+                }}>
                     <ListItemIcon>
                         <Checkbox
                             edge="start"
@@ -109,34 +114,47 @@ function OrderBookComponent() {
                             disableRipple
                         />
                     </ListItemIcon>
-                    Auto Update
+                    Show total
                 </MenuItem>
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={() => {
+                    setShowMid(!showMid)
+                }}>
                     <ListItemIcon>
                         <Checkbox
                             edge="start"
-                            checked={false}
+                            checked={showMid}
                             tabIndex={-1}
                             disableRipple
                         />
                     </ListItemIcon>
-                    Show total
+                    Show mid and spread
                 </MenuItem>
                 <Typography id="input-slider" padding={2} gutterBottom>
-                    Max Depth = {maxDepth}
+                    Max Depth = {currentDepth}
                 </Typography>
-                {/*<Divider>Max Depth</Divider>*/}
                 <Container>
-                    <Slider aria-label="Max depth" min={1} max={20} value={maxDepth} onChange={handleMaxDepthUpdate}/>
+                    <Slider aria-label="Max depth" min={minDepth} max={maxDepth} value={currentDepth}
+                            onChange={handleMaxDepthUpdate}/>
                 </Container>
-                <Divider>Type</Divider>
-                <MenuItem onClick={handleClose}>
-                    <ButtonGroup variant="contained" aria-label="outlined primary button group">
-                        <Button><ExpandLessIcon/> Bids</Button>
-                        <Button><ExpandMoreIcon/> Asks</Button>
-                        <Button><UnfoldLessIcon/> All</Button>
+                <Typography id="input-slider" padding={2} gutterBottom>
+                    Type
+                </Typography>
+                <Container>
+                    <ButtonGroup variant="outlined" aria-label="outlined primary button group">
+                        <Button onClick={() => {
+                            setOrderBookType('Bids')
+                        }} value={"Bids"}
+                                variant={orderBookType === "Bids" ? "contained" : "outlined"}><ExpandLessIcon/> Bids</Button>
+                        <Button onClick={() => {
+                            setOrderBookType('Asks')
+                        }} value={"Asks"}
+                                variant={orderBookType === "Asks" ? "contained" : "outlined"}><ExpandMoreIcon/> Asks</Button>
+                        <Button onClick={() => {
+                            setOrderBookType('All')
+                        }} value={"All"}
+                                variant={orderBookType === "All" ? "contained" : "outlined"}><UnfoldLessIcon/> All</Button>
                     </ButtonGroup>
-                </MenuItem>
+                </Container>
             </Menu>
             <CardContent>
                 <Table aria-label="simple table">
@@ -144,12 +162,14 @@ function OrderBookComponent() {
                         <TableRow>
                             <TableCell>Price</TableCell>
                             <TableCell align="center">Size</TableCell>
-                            <TableCell align="right" width={'100%'}>Total</TableCell>
+                            {showTotal && <TableCell align="right" width={'100%'}>Total</TableCell>}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {orderBook.map((row) => (
-                            row.side === 'SELL' && <TableRow
+                        {orderBook.map((row, idx1) => (
+                            ((currentDepth >= orderBook.length / 2) || (idx1 < currentDepth))
+                            && row.side === 'SELL' && orderBookType !== "Bids" &&
+                            <TableRow
                                 key={row.price}
                                 sx={{'&:last-child td, &:last-child th': {border: 0}}}
                             >
@@ -158,16 +178,16 @@ function OrderBookComponent() {
                                     {row.priceLevel.toFixed(2)}
                                 </TableCell>
                                 <TableCell align="center">{row.size.toFixed(8)}</TableCell>
-                                <TableCell align="right" width={'100%'}>
+                                {showTotal && <TableCell align="right" width={'100%'}>
                                     {row.total.toFixed(8)}
                                     <LinearProgress colSpan={3} variant="determinate" value={
                                         ((row.total.toFixed(8)) * 100)
                                         / Math.max(orderBook[orderBook.length - 1].total.toFixed(8), orderBook[0].total.toFixed(8))}/>
-                                </TableCell>
+                                </TableCell>}
                             </TableRow>
 
                         ))}
-                        <TableRow
+                        {showMid && <TableRow
                             key={'mid'}
                             sx={{'&:last-child td, &:last-child th': {border: 0}}}
                         >
@@ -176,9 +196,11 @@ function OrderBookComponent() {
                                 {((Number(bbo.ask) + Number(bbo.bid)) / 2).toFixed(2)} {trend} (
                                 spread: {(bbo.ask - bbo.bid).toFixed(2)})
                             </TableCell>
-                        </TableRow>
-                        {orderBook.map((row) => (
-                            row.side === 'BUY' && <TableRow
+                        </TableRow>}
+                        {orderBook.map((row, idx2) => (
+                            ((currentDepth >= orderBook.length / 2) || (idx2 > (orderBook.length - 1 - currentDepth)))
+                            && row.side === 'BUY' && orderBookType !== "Asks" &&
+                            <TableRow
                                 key={row.price}
                                 sx={{'&:last-child td, &:last-child th': {border: 0}}}
                             >
@@ -186,13 +208,13 @@ function OrderBookComponent() {
                                            style={{color: (row.side === 'BUY' ? 'green' : 'red')}}>
                                     {row.priceLevel.toFixed(2)}
                                 </TableCell>
-                                <TableCell align="right">{row.size.toFixed(8)}</TableCell>
-                                <TableCell align="right" width={'100%'}>
+                                <TableCell align="center">{row.size.toFixed(8)}</TableCell>
+                                {showTotal && <TableCell align="right" width={'100%'}>
                                     {row.total.toFixed(8)}
                                     <LinearProgress colSpan={3} variant="determinate" value={
                                         ((row.total.toFixed(8)) * 100)
                                         / Math.max(orderBook[orderBook.length - 1].total.toFixed(8), orderBook[0].total.toFixed(8))}/>
-                                </TableCell>
+                                </TableCell>}
                             </TableRow>
                         ))}
                     </TableBody>
